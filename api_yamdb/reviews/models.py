@@ -54,3 +54,18 @@ class Genre(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Comment (models.Model):
+    title = models.ForeignKey(
+        Title, on_delete=models.CASCADE, related_name='comments')
+    text = models.TextField()
+    created = models.DateTimeField(
+        'Дата добавления', auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Комментарий"
+        verbose_name_plural = "Комментарии"
+
+    def __str__(self):
+        return f'{self.text[:50]}'
