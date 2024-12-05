@@ -3,12 +3,13 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 # from django.shortcuts import render
 
 from .models import User
+from .permissions import IsAdmin
 from .serializers import (
     UserSerializer,
     SignUpSerializer,
@@ -61,7 +62,7 @@ def get_token(request):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer = UserSerializer
-    permission_classes = (IsAdmin,)   #  permission_classes = (IsAdmin | IsAdminUser,)
+    permission_classes = (IsAdmin,)   #  permission_classes = (IsAdmin | IsAdminUser,??)
     search_fields = ('username',)
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
