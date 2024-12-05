@@ -30,7 +30,7 @@ class TitleSerializer(serializers.ModelSerializer):
                   'category')
 
 
-class CommentSerializer(serializers.ModelSerializer): #New
+class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
