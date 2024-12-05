@@ -7,7 +7,6 @@ from .constants import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
 
 
 class User(AbstractUser):
-    """Кастомная модель пользователя."""
 
     ROLE = [
         (USER, 'Пользователь'),
@@ -15,7 +14,7 @@ class User(AbstractUser):
         (ADMIN, 'Админ'),
     ]
 
-    username = models.CharField(                # мб RegexField
+    username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
         unique=True,
         verbose_name='Имя пользователя',

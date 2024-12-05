@@ -1,6 +1,5 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, action
@@ -10,13 +9,19 @@ from rest_framework_simplejwt.tokens import AccessToken
 # from django.shortcuts import render
 
 from .models import User
+from .serializers import (
+    UserSerializer,
+    SignUpSerializer,
+    UserProfileSerializer,
+    TokenSerializer
+    )
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
     """Новый пользователь."""
-    serializer = UserCreationSerializer(data=request.data)    # СМЕНИТЬ СЕРИК
+    serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
     email = serializer.validated_data.get('email')
@@ -25,8 +30,8 @@ def signup(request):
     confirmation_code = default_token_generator.make_token(user)
 
     send_mail(
-        subject="Код подтверждения",
-        message=f"Код подтверждения: {confirmation_code}",
+        subject='Код подтверждения',
+        message=f'Код подтверждения: {confirmation_code}',
         from_email='yamdb@yandex.ru',
         recipient_list=[email],
         fail_silently=False,)
@@ -38,7 +43,7 @@ def signup(request):
 @permission_classes([AllowAny])
 def get_token(request):
     """Получения и обновления токена."""
-    serializer = UserTokenSerializer(data=request.data)    # СМЕНИТЬ СЕРИК
+    serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
     confirmation_code = serializer.validated_data.get('confirmation_code')
@@ -54,9 +59,8 @@ def get_token(request):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    """ViewSet for users."""
     queryset = User.objects.all()
-    serializer = UserSerializer     # СМЕНИТЬ СЕРИК
+    serializer = UserSerializer
     permission_classes = (IsAdmin,)   #  permission_classes = (IsAdmin | IsAdminUser,)
     search_fields = ('username',)
     filter_backends = (filters.SearchFilter,)
@@ -69,7 +73,7 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def me(self, request):
-        serializer = UserProfileSerializer(     # СМЕНИТЬ СЕРИК
+        serializer = UserProfileSerializer(
             request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         if request.method == "PATCH":
