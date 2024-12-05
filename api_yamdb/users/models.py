@@ -10,8 +10,8 @@ MODERATOR = 'moderator'
 ADMIN = 'admin'
 
 
-class CustomUser(AbstractUser):
-    """Кастомная модель пользователя"""
+class User(AbstractUser):
+    """Кастомная модель пользователя."""
 
     ROLE = [
         (USER, 'Пользователь'),
