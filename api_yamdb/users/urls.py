@@ -2,14 +2,14 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from .views import UserViewSet, get_jwt_token, signup           # ИСПРАВИТЬ get token
+from .views import UserViewSet, get_token, signup
 
 router = DefaultRouter()
 router.register("users", UserViewSet)
 
 auth_patterns = [
     path('signup/', signup, name='signup'),
-    path('token/', get_jwt_token, name='get_jwt_token'),
+    path('token/', get_token, name='get_jwt_token'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
