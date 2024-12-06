@@ -29,8 +29,8 @@ class Command(BaseCommand):
 
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f'Успешно загружено связей произведений с жанрами'
-                            f'{csv_reader.line_num - 1}'
+                            f'Успешно загружено связей произведений с '
+                            f'жанрами: {csv_reader.line_num - 1}'
                         )
                     )
         except FileNotFoundError:
