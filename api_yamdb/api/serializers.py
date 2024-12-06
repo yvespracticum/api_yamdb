@@ -24,9 +24,10 @@ class TitleSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'name',
                   'year',
-                  'rating',
+                  'category',
                   'description',
                   'genre',
+                  'rating',
                   'category')
 
 
