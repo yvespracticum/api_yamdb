@@ -25,9 +25,10 @@ class UserProfileSerializer(UserSerializer):
 
 
 class SignUpSerializer(serializers.Serializer):
-    username = serializers.CharField(
+    username = serializers.RegexField(
         max_length=USERNAME_MAX_LENGTH,
         required=True,
+        regex=r'^[\w.@+-]'
         )
     email = serializers.EmailField(
         max_length=EMAIL_MAX_LENGTH,
@@ -35,7 +36,7 @@ class SignUpSerializer(serializers.Serializer):
         )
 
     def validate_username(self, data):
-        if data['username'] == 'me':
+        if data == 'me':
             raise serializers.ValidationError('Недопустимое имя')
         return data
 
@@ -56,3 +57,7 @@ class SignUpSerializer(serializers.Serializer):
 class TokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ('username', 'confirmation_code')

@@ -26,7 +26,6 @@ def signup(request):
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
     email = serializer.validated_data.get('email')
-
     user, _ = User.objects.get_or_create(username=username, email=email,)
     confirmation_code = default_token_generator.make_token(user)
 
@@ -61,12 +60,12 @@ def get_token(request):
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer = UserSerializer
+    serializer_class = UserSerializer
     permission_classes = (IsAdmin,)   #  permission_classes = (IsAdmin | IsAdminUser,??)
     search_fields = ('username',)
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
-    # http_method_names = ['get', 'post', 'delete', 'patch']
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     @action(
         methods=['patch', 'get'],
@@ -77,6 +76,8 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = UserProfileSerializer(
             request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        if request.method == "PATCH":
+        if request.method == 'PATCH':
             serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
