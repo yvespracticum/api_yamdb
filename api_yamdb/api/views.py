@@ -1,5 +1,7 @@
+from rest_framework import status
+from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from users.permissions import IsAdminOrReadOnly
 
 from api.serializers import (
     CategorySerializer,
@@ -7,6 +9,7 @@ from api.serializers import (
     TitleSerializer,
 )
 from reviews.models import Category, Genre, Title
+from users.permissions import IsAdminOrReadOnly
 
 
 class GenreViewSet(ModelViewSet):
@@ -14,6 +17,12 @@ class GenreViewSet(ModelViewSet):
     serializer_class = GenreSerializer
     lookup_field = 'slug'
     permission_classes = [IsAdminOrReadOnly]
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    http_method_names = ('get', 'post', 'delete')
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CategoryViewSet(ModelViewSet):
@@ -21,6 +30,12 @@ class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializer
     lookup_field = 'slug'
     permission_classes = [IsAdminOrReadOnly]
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    http_method_names = ('get', 'post', 'delete')
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(ModelViewSet):
@@ -29,3 +44,9 @@ class TitleViewSet(ModelViewSet):
     )
     serializer_class = TitleSerializer
     permission_classes = [IsAdminOrReadOnly]
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    http_method_names = ('get', 'post', 'delete')
+
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
