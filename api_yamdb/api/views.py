@@ -1,4 +1,5 @@
 from rest_framework.viewsets import ModelViewSet
+from users.permissions import IsAdminOrReadOnly
 
 from api.serializers import (
     CategorySerializer,
@@ -12,12 +13,14 @@ class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     lookup_field = 'slug'
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class TitleViewSet(ModelViewSet):
@@ -25,3 +28,4 @@ class TitleViewSet(ModelViewSet):
         'category'
     )
     serializer_class = TitleSerializer
+    permission_classes = [IsAdminOrReadOnly]
