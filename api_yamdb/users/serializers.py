@@ -29,11 +29,12 @@ class SignUpSerializer(serializers.Serializer):
         max_length=USERNAME_MAX_LENGTH,
         required=True,
         regex=r'^[\w.@+-]'
-        )
+    )
+
     email = serializers.EmailField(
         max_length=EMAIL_MAX_LENGTH,
         required=True,
-        )
+    )
 
     def validate_username(self, data):
         if data == 'me':

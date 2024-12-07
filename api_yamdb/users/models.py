@@ -7,7 +7,8 @@ from .constants import (
     EMAIL_MAX_LENGTH,
     USER,
     MODERATOR,
-    ADMIN)
+    ADMIN
+)
 
 
 class User(AbstractUser):

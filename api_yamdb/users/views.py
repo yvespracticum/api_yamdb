@@ -16,7 +16,7 @@ from .serializers import (
     SignUpSerializer,
     UserProfileSerializer,
     TokenSerializer
-    )
+)
 
 
 def send_confirmation_code(confirmation_code, email):
@@ -68,7 +68,7 @@ def signup(request):
         user, created = User.objects.get_or_create(
             username=username,
             email=email
-            )
+        )
         confirmation_code = default_token_generator.make_token(user)
         update_user_confirmation_code(user, confirmation_code)
         send_confirmation_code(confirmation_code, email)
