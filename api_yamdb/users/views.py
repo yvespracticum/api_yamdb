@@ -25,7 +25,8 @@ def send_confirmation_code(confirmation_code, email):
         message=f'Код подтверждения: {confirmation_code}',
         from_email='yamdb@yandex.ru',
         recipient_list=[email],
-        fail_silently=False,)
+        fail_silently=False,
+    )
 
 
 def update_user_confirmation_code(user, confirmation_code):
