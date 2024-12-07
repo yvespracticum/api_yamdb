@@ -29,28 +29,16 @@ class SignUpSerializer(serializers.Serializer):
         max_length=USERNAME_MAX_LENGTH,
         required=True,
         regex=r'^[\w.@+-]'
-        )
+    )
+
     email = serializers.EmailField(
         max_length=EMAIL_MAX_LENGTH,
         required=True,
-        )
+    )
 
     def validate_username(self, data):
         if data == 'me':
             raise serializers.ValidationError('Недопустимое имя')
-        return data
-
-    def validate(self, data):
-        if User.objects.filter(username=data.get('username')).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким username уже существует'
-                )
-
-        if User.objects.filter(email=data.get('email')).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует'
-                )
-
         return data
 
 
