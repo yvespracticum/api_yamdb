@@ -40,19 +40,6 @@ class SignUpSerializer(serializers.Serializer):
             raise serializers.ValidationError('Недопустимое имя')
         return data
 
-    def validate(self, data):
-        if User.objects.filter(username=data.get('username')).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким username уже существует'
-                )
-
-        if User.objects.filter(email=data.get('email')).exists():
-            raise serializers.ValidationError(
-                'Пользователь с таким email уже существует'
-                )
-
-        return data
-
 
 class TokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
