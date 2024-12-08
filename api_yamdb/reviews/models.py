@@ -6,19 +6,17 @@ User = get_user_model()
 
 
 class Title(models.Model):
+    """
+    Модель произведения.
+    """
     name = models.CharField(max_length=256)
     year = models.PositiveSmallIntegerField()
-    rating = models.IntegerField(
-        default=0,
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(10)
-        ]
-    )
+    rating = models.FloatField(default=0)
     description = models.TextField(blank=True)
-    genre = models.ManyToManyField('Genre')
+    genre = models.ManyToManyField('Genre', related_name='titles')
     category = models.ForeignKey(
         'Category',
+        related_name='titles',
         on_delete=models.SET_NULL,
         null=True,
         blank=True
@@ -33,6 +31,9 @@ class Title(models.Model):
 
 
 class Category(models.Model):
+    """
+    Модель категории произведения.
+    """
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
@@ -45,6 +46,9 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
+    """
+    Модель жанра произведения.
+    """
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
