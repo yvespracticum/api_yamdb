@@ -1,6 +1,7 @@
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -74,6 +75,8 @@ class ReviewViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
+        if Review.objects.filter(title=title, author=self.request.user).exists():
+            raise ValidationError('Вы уже оставляли здесь отзыв.')
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
@@ -85,6 +88,10 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticatedOrReadOnly,
                           IsOwnerAdminModerator]
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    http_method_names = ('get', 'post', 'patch', 'delete')
+    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
