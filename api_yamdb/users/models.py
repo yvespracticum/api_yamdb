@@ -1,9 +1,14 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
+from django.db import models
 
-from .constants import (USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH,
-                        USER, MODERATOR, ADMIN)
+from .constants import (
+    USERNAME_MAX_LENGTH,
+    EMAIL_MAX_LENGTH,
+    USER,
+    MODERATOR,
+    ADMIN
+)
 
 
 class User(AbstractUser):
