@@ -16,9 +16,10 @@ class Title(models.Model):
         ]
     )
     description = models.TextField(blank=True)
-    genre = models.ManyToManyField('Genre')
+    genre = models.ManyToManyField('Genre', related_name='titles')
     category = models.ForeignKey(
         'Category',
+        related_name='titles',
         on_delete=models.SET_NULL,
         null=True,
         blank=True
