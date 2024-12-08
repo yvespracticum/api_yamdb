@@ -1,7 +1,9 @@
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from api.serializers import (
@@ -28,7 +30,12 @@ class GenreViewSet(ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
-    http_method_names = ('get', 'post', 'patch', 'delete')
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CategoryViewSet(ModelViewSet):
@@ -38,7 +45,12 @@ class CategoryViewSet(ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
-    http_method_names = ('get', 'post', 'patch', 'delete')
+
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def partial_update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitleViewSet(ModelViewSet):
