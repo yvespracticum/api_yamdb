@@ -6,4 +6,4 @@ class ReviewsConfig(AppConfig):
     name = 'reviews'
 
     def ready(self):
-        import reviews.signals
+        import reviews.signals  # noqa: F401
