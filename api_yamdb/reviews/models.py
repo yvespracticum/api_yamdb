@@ -6,9 +6,7 @@ User = get_user_model()
 
 
 class Title(models.Model):
-    """
-    Модель произведения.
-    """
+    """Модель произведения."""
     name = models.CharField(max_length=256)
     year = models.PositiveSmallIntegerField()
     rating = models.FloatField(default=0)
@@ -31,9 +29,7 @@ class Title(models.Model):
 
 
 class Category(models.Model):
-    """
-    Модель категории произведения.
-    """
+    """Модель категории произведения."""
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 
@@ -46,9 +42,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    """
-    Модель жанра произведения.
-    """
+    """Модель жанра произведения."""
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True)
 

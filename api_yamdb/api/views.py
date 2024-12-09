@@ -23,6 +23,7 @@ from reviews.models import (
 )
 from users.permissions import IsAdminOrReadOnly, IsOwnerAdminModerator
 
+
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
