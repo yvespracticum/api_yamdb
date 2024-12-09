@@ -1,6 +1,7 @@
 from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -20,8 +21,7 @@ from reviews.models import (
     Review,
     Title,
 )
-from users.permissions import IsAdminOrReadOnly
-
+from users.permissions import IsAdminOrReadOnly, IsOwnerAdminModerator
 
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
@@ -67,7 +67,8 @@ class TitleViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -75,7 +76,7 @@ class ReviewViewSet(ModelViewSet):
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
         if Review.objects.filter(title=title, author=self.request.user).exists():
-            raise ValidationError('Ошибка')
+            raise ValidationError('Вы уже оставляли здесь отзыв.')
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
@@ -85,7 +86,8 @@ class ReviewViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')

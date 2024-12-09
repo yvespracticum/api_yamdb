@@ -61,6 +61,9 @@ class Genre(models.Model):
 
 
 class Review(models.Model):
+    """
+    Модель отзыва на произведение.
+    """
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -80,12 +83,16 @@ class Review(models.Model):
         ordering = ['-pub_date']
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
+        unique_together = ('author', 'title')
 
     def __str__(self):
         return self.text
 
 
 class Comment(models.Model):
+    """
+    Модель комментария к отзыву на произведение.
+    """
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
