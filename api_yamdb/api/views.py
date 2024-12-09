@@ -20,8 +20,7 @@ from reviews.models import (
     Review,
     Title,
 )
-from users.permissions import IsAdminOrReadOnly
-
+from users.permissions import IsAdminOrReadOnly, IsOwnerAdminModerator
 
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
@@ -67,15 +66,14 @@ class TitleViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
-        if Review.objects.filter(title=title, author=self.request.user).exists():
-            raise ValidationError('Ошибка')
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
@@ -85,7 +83,8 @@ class ReviewViewSet(ModelViewSet):
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
