@@ -91,10 +91,6 @@ class CommentViewSet(ModelViewSet):
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
-    permission_classes = [IsAuthenticatedOrReadOnly]
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_queryset(self):
         return Comment.objects.filter(review_id=self.kwargs['review_id'])
