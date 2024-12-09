@@ -9,7 +9,7 @@ class Title(models.Model):
     """Модель произведения."""
     name = models.CharField(max_length=256)
     year = models.PositiveSmallIntegerField()
-    rating = models.FloatField(default=0)
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
     description = models.TextField(blank=True)
     genre = models.ManyToManyField('Genre', related_name='titles')
     category = models.ForeignKey(
