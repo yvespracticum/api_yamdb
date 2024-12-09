@@ -1,5 +1,5 @@
 Загрузить данные в базу из csv файлов можно командой:
 
 ```shell
-python manage.py load_test_data_to_db
+python manage.py load_test_data
 ```
