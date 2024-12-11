@@ -19,3 +19,8 @@ def update_rating(sender, instance, **kwargs):
     else:
         title.rating = None
     title.save()
+
+
+def setup():
+    post_save.connect(update_rating, sender=Review)
+    post_delete.connect(update_rating, sender=Review)
