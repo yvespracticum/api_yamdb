@@ -9,7 +9,6 @@ class TitleFilter(filters.FilterSet):
         field_name='category__slug',
         lookup_expr='exact'
     )
-    year = filters.NumberFilter(field_name='year', lookup_expr='exact')
     name = filters.CharFilter(
         field_name='name',
         lookup_expr='icontains'
@@ -17,4 +16,4 @@ class TitleFilter(filters.FilterSet):
 
     class Meta:
         model = Title
-        fields = ['genre', 'category', 'year', 'name']
+        fields = ('genre', 'category', 'year', 'name')

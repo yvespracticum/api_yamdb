@@ -88,6 +88,28 @@ class Review(models.Model):
         verbose_name_plural = "Отзывы"
         unique_together = ('author', 'title')
 
+    def save(self, *args, **kwargs):
+        """Переопределяем save для пересчета рейтинга при добавлении отзыва."""
+        super().save(*args, **kwargs)
+        self.update_title_rating()
+
+    def delete(self, *args, **kwargs):
+        """Переопределяем delete для пересчета рейтинга при удалении отзыва."""
+        title = self.title
+        super().delete(*args, **kwargs)
+        title.save()
+
+    def update_title_rating(self):
+        """Пересчитывает рейтинг для связанного произведения."""
+        title = self.title
+        reviews = title.reviews.all()
+        scores = [review.score for review in reviews]
+        if scores:
+            title.rating = sum(scores) // len(scores)
+        else:
+            title.rating = None
+        title.save()
+
     def __str__(self):
         return self.text
 
