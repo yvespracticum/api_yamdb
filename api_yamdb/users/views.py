@@ -1,21 +1,19 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import User
 from .permissions import IsAdmin
 from .serializers import (
-    UserSerializer,
     SignUpSerializer,
+    TokenSerializer,
     UserProfileSerializer,
-    TokenSerializer
+    UserSerializer,
 )
 
 
@@ -24,8 +22,7 @@ def send_confirmation_code(confirmation_code, email):
         subject='Код подтверждения',
         message=f'Код подтверждения: {confirmation_code}',
         from_email='yamdb@yandex.ru',
-        recipient_list=[email],
-        fail_silently=False,
+        recipient_list=[email]
     )
 
 
@@ -42,33 +39,42 @@ def signup(request):
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
     email = serializer.validated_data.get('email')
-    checkEmail = User.objects.filter(email=email)
-    if checkEmail:
+    check_email = User.objects.filter(email=email)
+    if check_email:
         # Если пользователь с таким email уже существует
-        checkUsername = User.objects.filter(username=username, email=email)
-        if checkUsername:
+        check_username = User.objects.filter(username=username, email=email)
+        if check_username:
             # Если существует пользователь с таким email и username
-            user = checkUsername.get(email=email)
+            user = check_username.get(email=email)
             confirmation_code = default_token_generator.make_token(user)
             update_user_confirmation_code(user, confirmation_code)
             send_confirmation_code(confirmation_code, email)
-            return Response({
-                'username': [username],
-                'email': email},
-                status=status.HTTP_200_OK)
+            return Response(
+                {
+                    'username': username,
+                    'email': email
+                },
+                status=status.HTTP_200_OK
+            )
         else:
-            return Response({
-                'email': [email],
-                'username': [username]},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {
+                    'email': email,
+                    'username': username
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
     else:
         # Если пользователь с таким username уже существует
-        checkUsername = User.objects.filter(username=username)
-        if checkUsername:
-            return Response({
-                # 'email': [email],
-                'username': [username]},
-                            status=status.HTTP_400_BAD_REQUEST)
+        check_username = User.objects.filter(username=username)
+        if check_username:
+            return Response(
+                {
+                    # 'email': [email],
+                    'username': username
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         user, created = User.objects.get_or_create(
             username=username,
             email=email
@@ -77,9 +83,11 @@ def signup(request):
         update_user_confirmation_code(user, confirmation_code)
         send_confirmation_code(confirmation_code, email)
         if not created:
-            return Response({
-                'email': [email],
-                'username': [username]},
+            return Response(
+                {
+                    'email': email,
+                    'username': username
+                },
                 status=status.HTTP_200_OK
             )
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -95,8 +103,8 @@ def get_token(request):
     #     user = get_object_or_404(User, username=username)
     #     access = AccessToken.for_user(user)
     #     return Response({'token': f'{access}'}, status=status.HTTP_200_OK)
-    # return Response({'field_name': ['Токен не получен']}, status=status.HTTP_400_BAD_REQUEST)
-
+    # return Response({'field_name': ['Токен не получен']},
+    # status=status.HTTP_400_BAD_REQUEST)
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
@@ -104,11 +112,12 @@ def get_token(request):
     user = get_object_or_404(User, username=username)
     if default_token_generator.check_token(user, confirmation_code):
         token = AccessToken.for_user(user)
-        return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
+        return Response({'token': token}, status=status.HTTP_200_OK)
     else:
         return Response(
-            {'field_name': ["Неверный код подтверждения."]},
-            status=status.HTTP_400_BAD_REQUEST)
+            {'field_name': "Неверный код подтверждения."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -118,16 +127,17 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
-    http_method_names = ['get', 'post', 'delete', 'patch']
+    http_method_names = ('get', 'post', 'delete', 'patch')
 
     @action(
-        methods=['patch', 'get'],
+        methods=('patch', 'get'),
         detail=False,
         permission_classes=(IsAuthenticated,),
     )
     def me(self, request):
         serializer = UserProfileSerializer(
-            request.user, data=request.data, partial=True)
+            request.user, data=request.data, partial=True
+        )
         serializer.is_valid(raise_exception=True)
         if request.method == 'PATCH':
             serializer.save()

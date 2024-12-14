@@ -1,11 +1,10 @@
 from rest_framework import serializers
 
-from .models import User
 from .constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
+from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = (
@@ -19,7 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(UserSerializer):
-
     class Meta(UserSerializer.Meta):
         read_only_fields = ('role',)
 
@@ -40,7 +38,6 @@ class SignUpSerializer(serializers.Serializer):
         if data == 'me':
             raise serializers.ValidationError('Недопустимое имя')
         return data
-
     # def validate_username(self, data):
     #     pattern = r"[^a-zA-Z0-9_-]"
     #     match = re.findall(pattern, data)
@@ -48,9 +45,10 @@ class SignUpSerializer(serializers.Serializer):
     #         raise serializers.ValidationError('Недопустимый символ')
     #     elif data == 'me':
     #         raise serializers.ValidationError('Недопустимое имя')
-    #     else: 
+    #     else:
     #         return data
-        
+
+
 class TokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
