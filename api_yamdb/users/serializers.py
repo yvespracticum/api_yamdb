@@ -41,7 +41,16 @@ class SignUpSerializer(serializers.Serializer):
             raise serializers.ValidationError('Недопустимое имя')
         return data
 
-
+    # def validate_username(self, data):
+    #     pattern = r"[^a-zA-Z0-9_-]"
+    #     match = re.findall(pattern, data)
+    #     if match:
+    #         raise serializers.ValidationError('Недопустимый символ')
+    #     elif data == 'me':
+    #         raise serializers.ValidationError('Недопустимое имя')
+    #     else: 
+    #         return data
+        
 class TokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
     confirmation_code = serializers.CharField()
