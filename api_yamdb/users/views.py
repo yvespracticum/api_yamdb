@@ -53,22 +53,21 @@ def signup(request):
             update_user_confirmation_code(user, confirmation_code)
             send_confirmation_code(confirmation_code, email)
             return Response({
-                'username': [username],
-                'email': email},
+                'email': email,
+                'username': username},
                 status=status.HTTP_200_OK)
         else:
-            return Response({
-                'email': [email],
-                'username': [username]},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'email': [email]},
+                status=status.HTTP_400_BAD_REQUEST)
     else:
         # Если пользователь с таким username уже существует
         checkUsername = User.objects.filter(username=username)
         if checkUsername:
             return Response({
-                # 'email': [email],
                 'username': [username]},
-                            status=status.HTTP_400_BAD_REQUEST)
+                status=status.HTTP_400_BAD_REQUEST
+            )
         user, created = User.objects.get_or_create(
             username=username,
             email=email
@@ -89,14 +88,6 @@ def signup(request):
 @permission_classes([AllowAny])
 def get_token(request):
     """Получения и обновления токена."""
-    # serializer = TokenSerializer(data=request.data)
-    # if serializer.is_valid():
-    #     username = serializer.validated_data.get('username')
-    #     user = get_object_or_404(User, username=username)
-    #     access = AccessToken.for_user(user)
-    #     return Response({'token': f'{access}'}, status=status.HTTP_200_OK)
-    # return Response({'field_name': ['Токен не получен']}, status=status.HTTP_400_BAD_REQUEST)
-
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
@@ -107,7 +98,7 @@ def get_token(request):
         return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
     else:
         return Response(
-            {'field_name': ["Неверный код подтверждения."]},
+            {'field_name': ['Неверный код подтверждения.']},
             status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -126,9 +117,15 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def me(self, request):
-        serializer = UserProfileSerializer(
-            request.user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(User, username=request.user.username)
         if request.method == 'PATCH':
-            serializer.save()
+            serializer = UserProfileSerializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
