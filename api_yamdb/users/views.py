@@ -52,20 +52,22 @@ def signup(request):
             confirmation_code = default_token_generator.make_token(user)
             update_user_confirmation_code(user, confirmation_code)
             send_confirmation_code(confirmation_code, email)
-            return Response({'message': 'Пользователь с таким email уже есть. '
-                            'Код подтверждения отправлен повторно.'},
-                            status=status.HTTP_200_OK)
+            return Response({
+                'email': email,
+                'username': username},
+                status=status.HTTP_200_OK)
         else:
-            return Response({'message': 'Пользователь с таким email и username'
-                             'не сущесвует.'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'email': [email]},
+                status=status.HTTP_400_BAD_REQUEST)
     else:
         # Если пользователь с таким username уже существует
         checkUsername = User.objects.filter(username=username)
         if checkUsername:
-            return Response({'message': 'Пользователь с таким username '
-                             'уже сущесвует.'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'username': [username]},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         user, created = User.objects.get_or_create(
             username=username,
             email=email
@@ -74,9 +76,9 @@ def signup(request):
         update_user_confirmation_code(user, confirmation_code)
         send_confirmation_code(confirmation_code, email)
         if not created:
-            return Response(
-                {'message': 'Пользователь с таким email уже есть.'
-                 ' Код подтверждения отправлен повторно.'},
+            return Response({
+                'email': [email],
+                'username': [username]},
                 status=status.HTTP_200_OK
             )
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -91,14 +93,13 @@ def get_token(request):
     username = serializer.validated_data.get('username')
     confirmation_code = serializer.validated_data.get('confirmation_code')
     user = get_object_or_404(User, username=username)
-
     if default_token_generator.check_token(user, confirmation_code):
         token = AccessToken.for_user(user)
         return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
-
-    return Response(
-        {"Неверный код подтверждения."},
-        status=status.HTTP_400_BAD_REQUEST,)
+    else:
+        return Response(
+            {'field_name': ['Неверный код подтверждения.']},
+            status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -116,9 +117,15 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
     )
     def me(self, request):
-        serializer = UserProfileSerializer(
-            request.user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(User, username=request.user.username)
         if request.method == 'PATCH':
-            serializer.save()
+            serializer = UserProfileSerializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)

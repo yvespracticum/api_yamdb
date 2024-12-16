@@ -1,3 +1,4 @@
+import re
 from rest_framework import serializers
 
 from .models import User
@@ -37,7 +38,10 @@ class SignUpSerializer(serializers.Serializer):
     )
 
     def validate_username(self, data):
-        if data == 'me':
+        pattern = re.compile(r'^[\w.@+-]+\Z')
+        if not pattern.match(data):
+            raise serializers.ValidationError('Недопустимый символ')
+        elif data == 'me':
             raise serializers.ValidationError('Недопустимое имя')
         return data
 

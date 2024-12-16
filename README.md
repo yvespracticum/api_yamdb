@@ -157,4 +157,3 @@ POST /api/v1/titles/{title_id}/reviews/
 - [Валерия Рабченюк](https://github.com/ValeryRabchenyuk)
 - [Олег Мартьянов](https://github.com/OlegMorty)
 - [Иван Подгорный](https://github.com/yvespracticum)
-
