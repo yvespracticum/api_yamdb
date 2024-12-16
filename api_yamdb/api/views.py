@@ -1,6 +1,8 @@
+from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -28,7 +30,7 @@ class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     lookup_field = 'slug'
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
@@ -43,7 +45,7 @@ class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
-    permission_classes = (IsAdminOrReadOnly,)
+    permission_classes = [IsAdminOrReadOnly]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
@@ -70,14 +72,19 @@ class TitleViewSet(ModelViewSet):
 class ReviewViewSet(ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsOwnerAdminModerator)
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
+        if Review.objects.filter(
+            title=title,
+            author=self.request.user
+        ).exists():
+            raise ValidationError('Вы уже оставляли здесь отзыв.')
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
@@ -85,9 +92,10 @@ class ReviewViewSet(ModelViewSet):
 
 
 class CommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsOwnerAdminModerator)
+    permission_classes = [IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator]
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')

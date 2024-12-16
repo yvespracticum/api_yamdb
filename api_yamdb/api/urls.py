@@ -1,4 +1,3 @@
-from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from api.views import (
@@ -20,6 +19,4 @@ router.register(
     CommentViewSet, basename='comments'
 )
 
-urlpatterns = [
-    path('v1/', include(router.urls)),
-]
+urlpatterns = router.urls

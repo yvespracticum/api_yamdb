@@ -14,6 +14,6 @@ auth_patterns = [
 ]
 
 urlpatterns = [
-    path('v1/auth/', include(auth_patterns)),
-    path('v1/', include(router.urls)),
+    path('auth/', include(auth_patterns)),
+    path('', include(router.urls)),
 ]
