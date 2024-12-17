@@ -22,7 +22,7 @@ def send_confirmation_code(confirmation_code, email):
         subject='Код подтверждения',
         message=f'Код подтверждения: {confirmation_code}',
         from_email='yamdb@yandex.ru',
-        recipient_list=[email]
+        recipient_list=[email],
     )
 
 
@@ -51,17 +51,14 @@ def signup(request):
             send_confirmation_code(confirmation_code, email)
             return Response(
                 {
-                    'username': username,
-                    'email': email
+                    'email': email,
+                    'username': username
                 },
                 status=status.HTTP_200_OK
             )
         else:
             return Response(
-                {
-                    'email': email,
-                    'username': username
-                },
+                {'email': [email]},
                 status=status.HTTP_400_BAD_REQUEST
             )
     else:
@@ -70,8 +67,7 @@ def signup(request):
         if check_username:
             return Response(
                 {
-                    # 'email': [email],
-                    'username': username
+                    'username': [username]
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -85,8 +81,8 @@ def signup(request):
         if not created:
             return Response(
                 {
-                    'email': email,
-                    'username': username
+                    'email': [email],
+                    'username': [username]
                 },
                 status=status.HTTP_200_OK
             )
@@ -97,14 +93,6 @@ def signup(request):
 @permission_classes([AllowAny])
 def get_token(request):
     """Получения и обновления токена."""
-    # serializer = TokenSerializer(data=request.data)
-    # if serializer.is_valid():
-    #     username = serializer.validated_data.get('username')
-    #     user = get_object_or_404(User, username=username)
-    #     access = AccessToken.for_user(user)
-    #     return Response({'token': f'{access}'}, status=status.HTTP_200_OK)
-    # return Response({'field_name': ['Токен не получен']},
-    # status=status.HTTP_400_BAD_REQUEST)
     serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
@@ -112,10 +100,10 @@ def get_token(request):
     user = get_object_or_404(User, username=username)
     if default_token_generator.check_token(user, confirmation_code):
         token = AccessToken.for_user(user)
-        return Response({'token': token}, status=status.HTTP_200_OK)
+        return Response({'token': f'{token}'}, status=status.HTTP_200_OK)
     else:
         return Response(
-            {'field_name': "Неверный код подтверждения."},
+            {'field_name': ['Неверный код подтверждения.']},
             status=status.HTTP_400_BAD_REQUEST
         )
 
@@ -127,18 +115,23 @@ class UserViewSet(viewsets.ModelViewSet):
     search_fields = ('username',)
     filter_backends = (filters.SearchFilter,)
     lookup_field = 'username'
-    http_method_names = ('get', 'post', 'delete', 'patch')
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     @action(
-        methods=('patch', 'get'),
+        methods=['patch', 'get'],
         detail=False,
         permission_classes=(IsAuthenticated,),
     )
     def me(self, request):
-        serializer = UserProfileSerializer(
-            request.user, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(User, username=request.user.username)
         if request.method == 'PATCH':
-            serializer.save()
+            serializer = UserProfileSerializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
