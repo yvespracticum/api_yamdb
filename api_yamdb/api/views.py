@@ -29,13 +29,11 @@ class GenreViewSet(ModelViewSet):
     serializer_class = GenreSerializer
     lookup_field = 'slug'
     permission_classes = (IsAdminOrReadOnly,)
+    http_method_names = ('get', 'post', 'delete')
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
     def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def partial_update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
@@ -44,13 +42,11 @@ class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializer
     lookup_field = 'slug'
     permission_classes = (IsAdminOrReadOnly,)
+    http_method_names = ('get', 'post', 'delete')
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
     def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def partial_update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
@@ -65,6 +61,45 @@ class TitleViewSet(ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return TitleReadSerializer
         return TitleCreateSerializer
+
+    def save_and_respond(self, serializer, status_code):
+        """
+        Общая логика сохранения и возврата данных
+        с использованием TitleReadSerializer.
+        """
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(
+            serializer
+        ) if status_code == status.HTTP_201_CREATED else self.perform_update(
+            serializer
+        )
+        read_serializer = TitleReadSerializer(
+            serializer.instance,
+            context={'request': self.request}
+        )
+        return Response(read_serializer.data, status=status_code)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Переопределяем метод create,
+        используя общий метод save_and_respond.
+        """
+        serializer = self.get_serializer(data=request.data)
+        return self.save_and_respond(serializer, status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Переопределяем метод update,
+        используя общий метод save_and_respond.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=partial
+        )
+        return self.save_and_respond(serializer, status.HTTP_200_OK)
 
 
 class ReviewViewSet(ModelViewSet):

@@ -1,21 +1,19 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import User
 from .permissions import IsAdmin
 from .serializers import (
-    UserSerializer,
     SignUpSerializer,
+    TokenSerializer,
     UserProfileSerializer,
-    TokenSerializer
+    UserSerializer,
 )
 
 
@@ -25,7 +23,6 @@ def send_confirmation_code(confirmation_code, email):
         message=f'Код подтверждения: {confirmation_code}',
         from_email='yamdb@yandex.ru',
         recipient_list=[email],
-        fail_silently=False,
     )
 
 
@@ -42,30 +39,36 @@ def signup(request):
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data.get('username')
     email = serializer.validated_data.get('email')
-    checkEmail = User.objects.filter(email=email)
-    if checkEmail:
+    check_email = User.objects.filter(email=email)
+    if check_email:
         # Если пользователь с таким email уже существует
-        checkUsername = User.objects.filter(username=username, email=email)
-        if checkUsername:
+        check_username = User.objects.filter(username=username, email=email)
+        if check_username:
             # Если существует пользователь с таким email и username
-            user = checkUsername.get(email=email)
+            user = check_username.get(email=email)
             confirmation_code = default_token_generator.make_token(user)
             update_user_confirmation_code(user, confirmation_code)
             send_confirmation_code(confirmation_code, email)
-            return Response({
-                'email': email,
-                'username': username},
-                status=status.HTTP_200_OK)
+            return Response(
+                {
+                    'email': email,
+                    'username': username
+                },
+                status=status.HTTP_200_OK
+            )
         else:
             return Response(
                 {'email': [email]},
-                status=status.HTTP_400_BAD_REQUEST)
+                status=status.HTTP_400_BAD_REQUEST
+            )
     else:
         # Если пользователь с таким username уже существует
-        checkUsername = User.objects.filter(username=username)
-        if checkUsername:
-            return Response({
-                'username': [username]},
+        check_username = User.objects.filter(username=username)
+        if check_username:
+            return Response(
+                {
+                    'username': [username]
+                },
                 status=status.HTTP_400_BAD_REQUEST
             )
         user, created = User.objects.get_or_create(
@@ -76,9 +79,11 @@ def signup(request):
         update_user_confirmation_code(user, confirmation_code)
         send_confirmation_code(confirmation_code, email)
         if not created:
-            return Response({
-                'email': [email],
-                'username': [username]},
+            return Response(
+                {
+                    'email': [email],
+                    'username': [username]
+                },
                 status=status.HTTP_200_OK
             )
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -99,7 +104,8 @@ def get_token(request):
     else:
         return Response(
             {'field_name': ['Неверный код подтверждения.']},
-            status=status.HTTP_400_BAD_REQUEST)
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class UserViewSet(viewsets.ModelViewSet):

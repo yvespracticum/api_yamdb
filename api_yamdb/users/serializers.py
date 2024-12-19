@@ -1,12 +1,12 @@
 import re
+
 from rest_framework import serializers
 
-from .models import User
 from .constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
+from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = (
@@ -20,7 +20,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserProfileSerializer(UserSerializer):
-
     class Meta(UserSerializer.Meta):
         read_only_fields = ('role',)
 
