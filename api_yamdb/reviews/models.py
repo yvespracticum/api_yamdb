@@ -76,7 +76,7 @@ class Review(models.Model):
     )
     score = models.PositiveIntegerField(
         validators=[
-            MinValueValidator(0),
+            MinValueValidator(1),
             MaxValueValidator(10)
         ]
     )
@@ -87,6 +87,10 @@ class Review(models.Model):
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
         unique_together = ('author', 'title')
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 0454c1ec53a085149f5018fdf97272274c94004c
 
     def save(self, *args, **kwargs):
         """Переопределяем save для пересчета рейтинга при добавлении отзыва."""
@@ -109,6 +113,11 @@ class Review(models.Model):
         else:
             title.rating = None
         title.save()
+<<<<<<< HEAD
+=======
+>>>>>>> 47feab5aa92a6655787e14bbfb68a6a15dcef8e9
+=======
+>>>>>>> 0454c1ec53a085149f5018fdf97272274c94004c
 
     def __str__(self):
         return self.text
