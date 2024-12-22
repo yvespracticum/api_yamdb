@@ -1,5 +1,5 @@
-from django.forms import ValidationError
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
@@ -7,12 +7,13 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from api.filters import TitleFilter
 from api.serializers import (
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
     ReviewSerializer,
-    TitleSerializer,
+    TitleCreateSerializer, TitleReadSerializer,
 )
 from reviews.models import (
     Category,
@@ -23,18 +24,17 @@ from reviews.models import (
 )
 from users.permissions import IsAdminOrReadOnly, IsOwnerAdminModerator
 
+
 class GenreViewSet(ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     lookup_field = 'slug'
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = (IsAdminOrReadOnly,)
+    http_method_names = ('get', 'post', 'delete')
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
     def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def partial_update(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
@@ -42,33 +42,72 @@ class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     lookup_field = 'slug'
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = (IsAdminOrReadOnly,)
+    http_method_names = ('get', 'post', 'delete')
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
 
     def retrieve(self, request, *args, **kwargs):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def partial_update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
 
 class TitleViewSet(ModelViewSet):
-    queryset = Title.objects.select_related(
-        'category'
-    ).prefetch_related(
-        'genre'
-    )
-    serializer_class = TitleSerializer
+    queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     http_method_names = ('get', 'post', 'patch', 'delete')
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleReadSerializer
+        return TitleCreateSerializer
+
+    def save_and_respond(self, serializer, status_code):
+        """
+        Общая логика сохранения и возврата данных
+        с использованием TitleReadSerializer.
+        """
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(
+            serializer
+        ) if status_code == status.HTTP_201_CREATED else self.perform_update(
+            serializer
+        )
+        read_serializer = TitleReadSerializer(
+            serializer.instance,
+            context={'request': self.request}
+        )
+        return Response(read_serializer.data, status=status_code)
+
+    def create(self, request, *args, **kwargs):
+        """
+        Переопределяем метод create,
+        используя общий метод save_and_respond.
+        """
+        serializer = self.get_serializer(data=request.data)
+        return self.save_and_respond(serializer, status.HTTP_201_CREATED)
+
+    def update(self, request, *args, **kwargs):
+        """
+        Переопределяем метод update,
+        используя общий метод save_and_respond.
+        """
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=partial
+        )
+        return self.save_and_respond(serializer, status.HTTP_200_OK)
 
 
 class ReviewViewSet(ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly,
-                          IsOwnerAdminModerator]
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
@@ -84,10 +123,9 @@ class ReviewViewSet(ModelViewSet):
 
 
 class CommentViewSet(ModelViewSet):
-    queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly,
-                          IsOwnerAdminModerator]
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')

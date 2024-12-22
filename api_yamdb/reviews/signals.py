@@ -15,8 +15,7 @@ def update_rating(sender, instance, **kwargs):
     scores = [review.score for review in reviews]
 
     if scores:
-        rating = sum(scores) / len(scores)
-        title.rating = round(rating, 1)
+        title.rating = sum(scores) // len(scores)
     else:
         title.rating = None
     title.save()

@@ -2,16 +2,20 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from reviews.constants import (
+    CATEGORY_NAME_MAX_LENGHT,
+    GENRE_NAME_MAX_LENGHT,
+    TITLE_NAME_MAX_LENGHT,
+)
+
 User = get_user_model()
 
 
 class Title(models.Model):
-    """
-    Модель произведения.
-    """
-    name = models.CharField(max_length=256)
+    """Модель произведения."""
+    name = models.CharField(max_length=TITLE_NAME_MAX_LENGHT)
     year = models.PositiveSmallIntegerField()
-    rating = models.FloatField(default=0)
+    rating = models.PositiveSmallIntegerField(null=True, blank=True)
     description = models.TextField(blank=True)
     genre = models.ManyToManyField('Genre', related_name='titles')
     category = models.ForeignKey(
@@ -31,10 +35,8 @@ class Title(models.Model):
 
 
 class Category(models.Model):
-    """
-    Модель категории произведения.
-    """
-    name = models.CharField(max_length=256)
+    """Модель категории произведения."""
+    name = models.CharField(max_length=CATEGORY_NAME_MAX_LENGHT)
     slug = models.SlugField(unique=True)
 
     class Meta:
@@ -46,10 +48,8 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    """
-    Модель жанра произведения.
-    """
-    name = models.CharField(max_length=256)
+    """Модель жанра произведения."""
+    name = models.CharField(max_length=GENRE_NAME_MAX_LENGHT)
     slug = models.SlugField(unique=True)
 
     class Meta:
@@ -67,10 +67,13 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews')
+        related_name='reviews'
+    )
     text = models.TextField()
-    author = models.ForeignKey(User,
-                               on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
     score = models.PositiveIntegerField(
         validators=[
             MinValueValidator(0),
@@ -85,6 +88,28 @@ class Review(models.Model):
         verbose_name_plural = "Отзывы"
         unique_together = ('author', 'title')
 
+    def save(self, *args, **kwargs):
+        """Переопределяем save для пересчета рейтинга при добавлении отзыва."""
+        super().save(*args, **kwargs)
+        self.update_title_rating()
+
+    def delete(self, *args, **kwargs):
+        """Переопределяем delete для пересчета рейтинга при удалении отзыва."""
+        title = self.title
+        super().delete(*args, **kwargs)
+        title.save()
+
+    def update_title_rating(self):
+        """Пересчитывает рейтинг для связанного произведения."""
+        title = self.title
+        reviews = title.reviews.all()
+        scores = [review.score for review in reviews]
+        if scores:
+            title.rating = sum(scores) // len(scores)
+        else:
+            title.rating = None
+        title.save()
+
     def __str__(self):
         return self.text
 
@@ -96,10 +121,13 @@ class Comment(models.Model):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='comments')
+        related_name='comments'
+    )
     text = models.TextField()
-    author = models.ForeignKey(User,
-                               on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE
+    )
     pub_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
