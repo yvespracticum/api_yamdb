@@ -118,8 +118,12 @@ class ReviewViewSet(ModelViewSet):
         Проверяет произведение и привязывает к нему отзыв.
         """
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
+<<<<<<< HEAD
         if Review.objects.filter(title=title,
                                  author=self.request.user).exists():
+=======
+        if Review.objects.filter(title=title, author=self.request.user).exists():
+>>>>>>> 0454c1ec53a085149f5018fdf97272274c94004c
             raise ValidationError('Вы уже оставляли здесь отзыв.')
         serializer.save(author=self.request.user, title=title)
 
@@ -132,7 +136,12 @@ class ReviewViewSet(ModelViewSet):
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
+<<<<<<< HEAD
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerAdminModerator)
+=======
+    permission_classes = (IsAuthenticatedOrReadOnly,
+                          IsOwnerAdminModerator)
+>>>>>>> 0454c1ec53a085149f5018fdf97272274c94004c
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
