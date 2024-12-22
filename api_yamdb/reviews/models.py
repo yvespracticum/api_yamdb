@@ -87,6 +87,7 @@ class Review(models.Model):
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
         unique_together = ('author', 'title')
+<<<<<<< HEAD
 
     def save(self, *args, **kwargs):
         """Переопределяем save для пересчета рейтинга при добавлении отзыва."""
@@ -109,6 +110,8 @@ class Review(models.Model):
         else:
             title.rating = None
         title.save()
+=======
+>>>>>>> 47feab5aa92a6655787e14bbfb68a6a15dcef8e9
 
     def __str__(self):
         return self.text
