@@ -112,24 +112,46 @@ class ReviewViewSet(ModelViewSet):
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def perform_create(self, serializer):
+        """
+        Создает новый отзыв для произведения.
+        Проверяет произведение и привязывает к нему отзыв.
+        """
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
+        """
+        Возвращает все отзывы для конкретного произведения.
+        """
         return Review.objects.filter(title_id=self.kwargs['title_id'])
 
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsOwnerAdminModerator)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerAdminModerator)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_queryset(self):
-        return Comment.objects.filter(review_id=self.kwargs['review_id'])
+        """
+        Возвращает все комментарии для конкретного отзыва.
+        Проверяет произведение и связанный с ним отзыв.
+        """
+        title_id = self.kwargs['title_id']
+        review_id = self.kwargs['review_id']
+        title = get_object_or_404(Title, pk=title_id)
+        review = get_object_or_404(Review, pk=review_id, title=title)
+        return Comment.objects.filter(review=review)
 
     def perform_create(self, serializer):
-        review = get_object_or_404(Review, pk=self.kwargs['review_id'])
+        """
+        Создает комментарий для указанного отзыва.
+        Проверяет произведение и отзыв, связывает с ним комментарий.
+        """
+        title_id = self.kwargs['title_id']
+        review_id = self.kwargs['review_id']
+        title = get_object_or_404(Title, pk=title_id)
+        review = get_object_or_404(Review, pk=review_id, title=title)
         serializer.save(author=self.request.user, review=review)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
