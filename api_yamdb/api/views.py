@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -112,10 +113,20 @@ class ReviewViewSet(ModelViewSet):
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def perform_create(self, serializer):
+        """
+        Создает новый отзыв для произведения.
+        Проверяет произведение и привязывает к нему отзыв.
+        """
         title = get_object_or_404(Title, pk=self.kwargs['title_id'])
+        if Review.objects.filter(title=title,
+                                 author=self.request.user).exists():
+            raise ValidationError('Вы уже оставляли здесь отзыв.')
         serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
+        """
+        Возвращает все отзывы для конкретного произведения.
+        """
         return Review.objects.filter(title_id=self.kwargs['title_id'])
 
 
@@ -128,8 +139,24 @@ class CommentViewSet(ModelViewSet):
     http_method_names = ('get', 'post', 'patch', 'delete')
 
     def get_queryset(self):
-        return Comment.objects.filter(review_id=self.kwargs['review_id'])
+        """
+        Возвращает все комментарии для конкретного отзыва.
+        Проверяет произведение и связанный с ним отзыв.
+        """
+        title_id = self.kwargs['title_id']
+        review_id = self.kwargs['review_id']
+        title = get_object_or_404(Title, pk=title_id)
+        review = get_object_or_404(Review, pk=review_id, title=title)
+        return Comment.objects.filter(review=review)
 
     def perform_create(self, serializer):
-        review = get_object_or_404(Review, pk=self.kwargs['review_id'])
+        """
+        Создает комментарий для указанного отзыва.
+        Проверяет произведение и отзыв, связывает с ним комментарий.
+        """
+        title_id = self.kwargs['title_id']
+        review_id = self.kwargs['review_id']
+        title = get_object_or_404(Title, pk=title_id)
+        review = get_object_or_404(Review, pk=review_id, title=title)
         serializer.save(author=self.request.user, review=review)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
