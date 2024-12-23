@@ -132,8 +132,6 @@ class ReviewViewSet(ModelViewSet):
 
 class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,
-                          IsOwnerAdminModerator)
     permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerAdminModerator)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
