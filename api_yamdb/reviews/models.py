@@ -76,7 +76,7 @@ class Review(models.Model):
     )
     score = models.PositiveIntegerField(
         validators=[
-            MinValueValidator(0),
+            MinValueValidator(1),
             MaxValueValidator(10)
         ]
     )
@@ -109,9 +109,6 @@ class Review(models.Model):
         else:
             title.rating = None
         title.save()
-
-    def __str__(self):
-        return self.text
 
 
 class Comment(models.Model):
