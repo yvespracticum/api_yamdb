@@ -13,11 +13,11 @@ from .constants import (
 
 class User(AbstractUser):
 
-    ROLE = [
+    ROLE = (
         (USER, 'Пользователь'),
         (MODERATOR, 'Модератор'),
         (ADMIN, 'Админ'),
-    ]
+    )
 
     username = models.CharField(
         max_length=USERNAME_MAX_LENGTH,
