@@ -35,7 +35,7 @@ class SignUpSerializer(serializers.Serializer):
     username = serializers.RegexField(
         max_length=USERNAME_MAX_LENGTH,
         required=True,
-        regex=r'^[\w.@+-]',
+        regex=r'^[\w.@+-]'
     )
 
     email = serializers.EmailField(
