@@ -22,8 +22,10 @@ class IsOwnerAdminModerator(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_authenticated:
-            return any([obj.author == request.user,
-                       request.user.is_superuser,
-                       request.user.is_admin,
-                       request.user.is_moderator])
+            return any(
+                (obj.author == request.user,
+                 request.user.is_superuser,
+                 request.user.is_admin,
+                 request.user.is_moderator)
+            )
         return request.method in SAFE_METHODS
